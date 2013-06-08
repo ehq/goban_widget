@@ -1,0 +1,85 @@
+body, html {
+  height: 100%;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 14px;
+}
+
+a {
+  text-decoration: none;
+  cursor: pointer;
+  color: #6F4242;
+}
+
+header {
+  width: 100%;
+  margin-bottom: 5px;
+  color: #6F4242;
+}
+
+header h1 {
+  line-height: 46px;
+  font-size: 40px;
+  font-family: 'Patua One', cursive;
+  width: auto;
+  display: inline-block;
+}
+
+footer {
+  margin-top: 25px;
+  padding-bottom: 15px;
+}
+
+footer h1 {
+  line-height: 20px;
+  font-size: 18px;
+  font-family: 'Patua One', cursive;
+}
+
+#controls {
+  float: right;
+  margin-top: 10px;
+  width: auto;
+}
+
+#controls .player {
+  margin-bottom: 5px;
+  color: black;
+}
+
+#controls span {
+  font-family: 'Ubuntu Mono', monospace;
+  display: inline-block;
+}
+
+#controls span.color {
+  width: 26px;
+}
+
+#controls span.clock {
+  width: 50px;
+}
+
+#controls span.name {
+  width: 160px;
+  font-weight: bold;
+  color: #6F4242;
+}
+
+#controls span.captures {
+  display: inline-block;
+}
+
+#actions {
+  float: right;
+}
+
+#wrapper {
+  height: 100%;
+  width: 100%;
+}
+
+#content {
+  height: 100%;
+  margin: 0 auto;
+  min-width: 420px;
+}
