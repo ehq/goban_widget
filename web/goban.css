@@ -80,6 +80,6 @@ footer h1 {
 
 #content {
   height: 100%;
-  margin: 0 auto;
+  padding-left: 25px;
   min-width: 420px;
 }

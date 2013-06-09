@@ -13,45 +13,49 @@
   </head>
 
   <body>
-    <header>
-      <h1>goban</h1>
+    <div id="wrapper">
+      <div id="content">
+        <header>
+          <h1>goban</h1>
 
-      <section id="controls">
-        <div id='players'>
-          <div class="player w">
-            <span class="color">白</span>
-            <span id='clock_white' class="clock"></span>
-            <span class="name">Player White</span>
-            <span='unicode'>&#9899;</span>
-            <span class="captures">0</span>
-          </div>
+          <section id="controls">
+            <div id='players'>
+              <div class="player w">
+                <span class="color">白</span>
+                <span id='clock_white' class="clock"></span>
+                <span class="name">Player White</span>
+                <span='unicode'>&#9899;</span>
+                <span class="captures">0</span>
+              </div>
 
-          <div class="player b">
-            <span class="color">黑</span>
-            <span id='clock_black' class="clock"></span>
-            <span class="name">Player Black</span>
-            <span='unicode'>&#9898;</span>
-            <span class="captures">0</span>
-          </div>
-        </div>
-      </section>
-    </header>
+              <div class="player b">
+                <span class="color">黑</span>
+                <span id='clock_black' class="clock"></span>
+                <span class="name">Player Black</span>
+                <span='unicode'>&#9898;</span>
+                <span class="captures">0</span>
+              </div>
+            </div>
+          </section>
+        </header>
 
-    <div id='goban'></div>
+        <div id='goban'></div>
 
-    <section id='actions'>
-      <a id='pass'>pass</a>
-      -
-      <a id='resign'>resign</a>
-    </section>
+        <section id='actions'>
+          <a id='pass'>pass</a>
+          -
+          <a id='resign'>resign</a>
+        </section>
 
-    <footer>
-      <h1>About goban</h1>
+        <footer>
+          <h1>About goban</h1>
 
-      <p>
-        Copyright 2013 by <a href='http://mandrula.com'>Mandrula</a>. Follow us at <a href="http://twitter.com/gobancc">@gobancc</a>.
-      </p>
-    </footer>
+          <p>
+            Copyright 2013 by <a href='http://mandrula.com'>Mandrula</a>. Follow us at <a href="http://twitter.com/gobancc">@gobancc</a>.
+          </p>
+        </footer>
+       </div>
+    </div>
 
     <script type="application/dart" src="board.dart"></script>
     <script src="packages/browser/dart.js"></script>
