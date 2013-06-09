@@ -45,15 +45,23 @@ $$.ButtonElement = {"": "Element;name=,value="};
 
 $$.CDataSection = {"": "Text;"};
 
-$$.CanvasElement = {"": "Element;",
+$$.CanvasElement = {"": "Element;height},width}",
   get$context2D: function(receiver) {
     return receiver.getContext("2d");
   }
 };
 
+$$.CanvasGradient = {"": "Interceptor;"};
+
+$$.CanvasPattern = {"": "Interceptor;"};
+
 $$.CanvasRenderingContext = {"": "Interceptor;"};
 
-$$.CanvasRenderingContext2D = {"": "CanvasRenderingContext;"};
+$$.CanvasRenderingContext2D = {"": "CanvasRenderingContext;",
+  arc$6: function(receiver, x, y, radius, startAngle, endAngle, anticlockwise) {
+    receiver.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+  }
+};
 
 $$.CharacterData = {"": "Node;length="};
 
@@ -147,7 +155,7 @@ $$.Element = {"": "Node;$$dom_children:children=,id%,style=",
   $asElement: null
 };
 
-$$.EmbedElement = {"": "Element;name=,src}"};
+$$.EmbedElement = {"": "Element;height},name=,src},width}"};
 
 $$.ErrorEvent = {"": "Event;"};
 
@@ -222,11 +230,11 @@ $$.HtmlOptionsCollection = {"": "HtmlCollection;"};
 
 $$.HttpRequestProgressEvent = {"": "ProgressEvent;"};
 
-$$.IFrameElement = {"": "Element;name=,src}"};
+$$.IFrameElement = {"": "Element;height},name=,src},width}"};
 
-$$.ImageElement = {"": "Element;src},x=,y="};
+$$.ImageElement = {"": "Element;height},src},width},x=,y="};
 
-$$.InputElement = {"": "Element;name=,src},value=", $isElement: true, $asElement: null};
+$$.InputElement = {"": "Element;height},name=,src},value=,width}", $isElement: true, $asElement: null};
 
 $$.KeyboardEvent = {"": "UIEvent;"};
 
@@ -341,7 +349,7 @@ $$.Notation = {"": "Node;"};
 
 $$.OListElement = {"": "Element;"};
 
-$$.ObjectElement = {"": "Element;name="};
+$$.ObjectElement = {"": "Element;height},name=,width}"};
 
 $$.OptGroupElement = {"": "Element;"};
 
@@ -439,7 +447,7 @@ $$.UListElement = {"": "Element;"};
 
 $$.UnknownElement = {"": "Element;"};
 
-$$.VideoElement = {"": "MediaElement;"};
+$$.VideoElement = {"": "MediaElement;height},width}"};
 
 $$.WheelEvent = {"": "MouseEvent;"};
 
@@ -999,6 +1007,12 @@ JSArray: {"": "List/Interceptor;",
       return [];
     return receiver.slice(start, end);
   },
+  get$last: function(receiver) {
+    var t1 = receiver.length;
+    if (t1 > 0)
+      return receiver[t1 - 1];
+    throw $.wrapException(new $.StateError("No elements"));
+  },
   get$isEmpty: function(receiver) {
     return receiver.length === 0;
   },
@@ -1107,6 +1121,8 @@ JSNumber: {"": "num/Interceptor;",
     return receiver / other;
   },
   $mul: function(receiver, other) {
+    if (typeof other !== "number")
+      throw $.wrapException(new $.ArgumentError(other));
     return receiver * other;
   },
   $tdiv: function(receiver, other) {
@@ -2929,7 +2945,7 @@ stringReplaceAllUnchecked: function(receiver, from, to) {
     return receiver.replace(new RegExp(from.replace(new RegExp("[-[\\]{}()*+?.,\\\\^$|#\\s]", 'g'), "\\$&"), 'g'), to.replace("$", "$$$$"));
 }}],
 ["board.dart", "board.dart", , {
-Board: {"": "Object;container,layers,size,paddingTop,lineGap,stoneRadius,stonesImage",
+Board: {"": "Object;container,layers,size,paddingTop,lineGap,stoneRadius,drawnStones,stonesImage",
   createCanvasElements$0: function() {
     var t1, t2, layer, canvasLayer, t3;
     for (t1 = ["buffer", "board", "stones", "markers", "hover"], t1 = new $.ListIterator(t1, t1.length, 0, null), t2 = this.layers; t1.moveNext$0();) {
@@ -2946,7 +2962,7 @@ Board: {"": "Object;container,layers,size,paddingTop,lineGap,stoneRadius,stonesI
     this.calculateBoardSize$0();
   },
   calculateBoardSize$0: function() {
-    var t1, pseudoElement, propValue, width, sizePx, t2, t3, t4;
+    var t1, pseudoElement, propValue, width, sizePx, t2, layer, t3, t4;
     t1 = this.container.parentElement;
     t1.getComputedStyle$1;
     pseudoElement = "";
@@ -2971,10 +2987,15 @@ Board: {"": "Object;container,layers,size,paddingTop,lineGap,stoneRadius,stonesI
     t2.set$height(t1, sizePx);
     t2.set$width(t1, sizePx);
     for (t1 = this.layers, t2 = new $.LinkedHashMapKeyIterable(t1)._map, t2 = new $.LinkedHashMapKeyIterator(t2, t2._modifications, null, null), t2._cell = t2._map._first; t2.moveNext$0();) {
-      t3 = $.get$style$x(t1.$index(t1, t2._liblib0$_current));
+      layer = t2._liblib0$_current;
+      t3 = $.get$style$x(t1.$index(t1, layer));
       t4 = $.getInterceptor$x(t3);
       t4.set$height(t3, sizePx);
       t4.set$width(t3, sizePx);
+      t3 = t1.$index(t1, layer);
+      t4 = $.getInterceptor$x(t3);
+      t4.set$width(t3, this.size);
+      t4.set$height(t3, this.size);
     }
   },
   drawLines$0: function() {
@@ -2999,10 +3020,172 @@ Board: {"": "Object;container,layers,size,paddingTop,lineGap,stoneRadius,stonesI
       context.stroke();
     }
   },
+  drawStars$0: function() {
+    var t1, context, t2, coord, t3, t4;
+    t1 = this.layers;
+    context = $.get$context2D$x(t1.$index(t1, "board"));
+    for (t1 = [[4, 4], [10, 4], [16, 4], [4, 10], [10, 10], [16, 10], [4, 16], [10, 16], [16, 16]], t1 = new $.ListIterator(t1, t1.length, 0, null), t2 = $.getInterceptor$x(context); t1.moveNext$0();) {
+      coord = t1._liblib$_current;
+      t3 = $.getInterceptor$asx(coord);
+      t4 = t3.$index(coord, 0);
+      t3 = t3.$index(coord, 1);
+      coord = new $.Point($.$add$ns(this.stoneRadius, $.$mul$n(this.lineGap, $.$sub$n(t4, 1))), $.$add$ns(this.stoneRadius, $.$mul$n(this.lineGap, $.$sub$n(t3, 1))));
+      context.beginPath();
+      t2.arc$6(context, coord.x, coord.y, $.$div$n(this.lineGap, 10), 0, 6.283185307179586, true);
+      context.fillStyle = "black";
+      context.fill();
+      context.stroke();
+    }
+  },
+  markLastPlayed$0: function() {
+    var t1, lastPlayed;
+    t1 = this.drawnStones;
+    if (t1.length > 0) {
+      lastPlayed = $.get$last$ax(t1);
+      t1 = $.getInterceptor$asx(lastPlayed);
+      this.markAt$3(t1.$index(lastPlayed, 0), t1.$index(lastPlayed, 1), t1.$index(lastPlayed, 2));
+    }
+  },
+  markAt$3: function(x, y, color) {
+    var t1, t2, t3, context;
+    $.$add$ns(this.stoneRadius, $.$mul$n(this.lineGap, $.$sub$n(x, 1)));
+    $.$add$ns(this.stoneRadius, $.$mul$n(this.lineGap, $.$sub$n(y, 1)));
+    t1 = this.layers;
+    t2 = $.get$context2D$x(t1.$index(t1, "markers"));
+    t3 = this.size;
+    t2.clearRect(0, 0, t3, t3);
+    context = $.get$context2D$x(t1.$index(t1, "markers"));
+    context.beginPath();
+    context.lineWidth = $.$div$n(this.lineGap, 20);
+    context.strokeStyle = $.$eq(color, "black") ? "#c9c6c0" : "#5d5856";
+    $.arc$6$x(context, x, y, $.$div$n(this.stoneRadius, 2), 0, 6.283185307179586, true);
+    context.stroke();
+  },
+  drawPlayedStones$0: function() {
+    var t1, t2, stone;
+    t1 = this.drawnStones;
+    t2 = t1.length;
+    if (t2 > 0)
+      for (t1.get$iterator, t1 = new $.ListIterator(t1, t2, 0, null); t1.moveNext$0();) {
+        stone = t1._liblib$_current;
+        t2 = $.getInterceptor$asx(stone);
+        this.drawStone$4(t2.$index(stone, 0), t2.$index(stone, 1), t2.$index(stone, 2), "buffer");
+      }
+    t1 = this.layers;
+    $.get$context2D$x(t1.$index(t1, "stones")).drawImage(t1.$index(t1, "buffer"), 0, 0);
+  },
+  drawStone$4: function(x, y, color, layer) {
+    var t1, context, t2, coords, img_size, t3, sprite_img_x, sprite_img_y, max;
+    if (typeof x !== "number")
+      return this.drawStone$4$bailout(1, x, y, color, layer);
+    if (typeof y !== "number")
+      return this.drawStone$4$bailout(1, x, y, color, layer);
+    if (typeof color !== "string")
+      return this.drawStone$4$bailout(1, x, y, color, layer);
+    t1 = this.layers;
+    context = $.get$context2D$x(t1.$index(t1, layer));
+    t1 = this.stoneRadius;
+    t2 = this.lineGap;
+    if (typeof t2 !== "number")
+      throw t2.$mul();
+    if (typeof t1 !== "number")
+      throw t1.$add();
+    coords = new $.Point(t1 + t2 * (x - 1), t1 + t2 * (y - 1));
+    img_size = t1 * 2;
+    t1 = coords.x;
+    if (typeof t1 !== "number")
+      return this.drawStone$4$bailout(2, 0, 0, color, 0, t1, img_size, context, coords);
+    t2 = img_size / 2;
+    t1 = $.JSNumber_methods.round$0(t1 - t2);
+    t3 = coords.y;
+    if (typeof t3 !== "number")
+      return this.drawStone$4$bailout(3, 0, 0, color, 0, t3, img_size, context, 0, t2, t1);
+    t2 = $.JSNumber_methods.round$0(t3 - t2);
+    if (color === "black") {
+      sprite_img_x = 3.5;
+      sprite_img_y = 3.5;
+    } else {
+      max = 3;
+      sprite_img_y = 74 + 70 * (Math.random() * max >>> 0);
+      sprite_img_x = 74;
+    }
+    context.drawImage(this.stonesImage, sprite_img_x, sprite_img_y, 63, 63, t1, t2, img_size, img_size);
+    $.Primitives_printString($.JSNumber_methods.toString$0(sprite_img_x));
+    $.Primitives_printString($.JSNumber_methods.toString$0(sprite_img_y));
+    $.Primitives_printString($.JSInt_methods.toString$0(63));
+    $.Primitives_printString($.JSInt_methods.toString$0(63));
+    $.Primitives_printString($.toString$0(t1));
+    $.Primitives_printString($.toString$0(t2));
+    $.Primitives_printString($.JSNumber_methods.toString$0(img_size));
+    $.Primitives_printString($.JSNumber_methods.toString$0(img_size));
+  },
+  drawStone$4$bailout: function(state0, x, y, color, layer, t4, img_size, context, coords, t1, img_x) {
+    switch (state0) {
+      case 0:
+      case 1:
+        state0 = 0;
+        t1 = this.layers;
+        context = $.get$context2D$x(t1.$index(t1, layer));
+        t1 = this.stoneRadius;
+        t2 = this.lineGap;
+        t3 = $.$sub$n(x, 1);
+        if (typeof t2 !== "number")
+          throw t2.$mul();
+        if (typeof t3 !== "number")
+          throw $.iae(t3);
+        t3 = $.$mul$n(t2, t3);
+        if (typeof t1 !== "number")
+          throw t1.$add();
+        t3 = $.$add$ns(t1, t3);
+        t1 = this.stoneRadius;
+        t2 = this.lineGap;
+        t4 = $.$sub$n(y, 1);
+        if (typeof t2 !== "number")
+          throw t2.$mul();
+        if (typeof t4 !== "number")
+          throw $.iae(t4);
+        t4 = $.$mul$n(t2, t4);
+        if (typeof t1 !== "number")
+          throw t1.$add();
+        coords = new $.Point(t3, $.$add$ns(t1, t4));
+        t4 = this.stoneRadius;
+        if (typeof t4 !== "number")
+          throw t4.$mul();
+        img_size = $.$mul$n(t4, 2);
+        t4 = coords.x;
+      case 2:
+        state0 = 0;
+        t1 = img_size / 2;
+        img_x = $.round$0$n($.$sub$n(t4, t1));
+        t4 = coords.y;
+      case 3:
+        var t2, t3, img_y, sprite_img_x, sprite_img_y, max;
+        state0 = 0;
+        img_y = $.round$0$n($.$sub$n(t4, t1));
+        if ($.$eq(color, "black")) {
+          sprite_img_x = 3.5;
+          sprite_img_y = 3.5;
+        } else {
+          max = 3;
+          sprite_img_y = 74 + 70 * (Math.random() * max >>> 0);
+          sprite_img_x = 74;
+        }
+        context.drawImage(this.stonesImage, sprite_img_x, sprite_img_y, 63, 63, img_x, img_y, img_size, img_size);
+        $.Primitives_printString($.JSNumber_methods.toString$0(sprite_img_x));
+        $.Primitives_printString($.JSNumber_methods.toString$0(sprite_img_y));
+        $.Primitives_printString($.JSInt_methods.toString$0(63));
+        $.Primitives_printString($.JSInt_methods.toString$0(63));
+        $.Primitives_printString($.toString$0(img_x));
+        $.Primitives_printString($.toString$0(img_y));
+        $.Primitives_printString($.JSNumber_methods.toString$0(img_size));
+        $.Primitives_printString($.JSNumber_methods.toString$0(img_size));
+    }
+  },
   Board$1: function(container) {
     var t1, truncated, t2;
     this.container = document.querySelector(container);
     this.paddingTop = 120;
+    this.drawnStones = [];
     this.createCanvasElements$0();
     t1 = $.JSDouble_methods.roundToDouble$0($.$div$n(this.size, 19));
     if (isNaN(t1))
@@ -3028,17 +3211,25 @@ Board: {"": "Object;container,layers,size,paddingTop,lineGap,stoneRadius,stonesI
 
 Board_closure: {"": "Closure;this_0",
   call$1: function(evt) {
-    this.this_0.drawLines$0();
+    var t1 = this.this_0;
+    t1.drawLines$0();
+    t1.drawStars$0();
+    t1.markLastPlayed$0();
+    t1.drawPlayedStones$0();
     return;
   }
 },
 
 main: function() {
-  $.Board$("#goban");
+  var board = $.Board$("#goban");
+  board.drawStone$4(4, 4, "black", "stones");
+  board.drawStone$4(10, 10, "white", "board");
+  board.drawStone$4(1, 1, "black", "board");
+  board.drawStone$4(18, 18, "white", "board");
 },
 
 Board$: function(container) {
-  var t1 = new $.Board(null, $.makeLiteralMap([]), null, null, null, null, $.ImageElement_ImageElement(null, "../images/stones-sprite-smallest.png", null));
+  var t1 = new $.Board(null, $.makeLiteralMap([]), null, null, null, null, null, $.ImageElement_ImageElement(null, "../images/stones-sprite-smallest.png", null));
   t1.Board$1(container);
   return t1;
 }}],
@@ -5396,6 +5587,8 @@ _AttributeClassSet: {"": "CssClassSetImpl;_liblib1$_element",
 ["dart.isolate", "dart:isolate", , {
 ReceivePort: {"": "Object;"}}],
 ["dart.math", "dart:math", , {
+_Random: {"": "Object;"},
+
 min: function(a, b) {
   var t1;
   if (typeof a === "number") {
@@ -5580,6 +5773,7 @@ $.JSNumber_methods = $.JSNumber.prototype;
 $.JSString_methods = $.JSString.prototype;
 $.C_CloseToken = new $.CloseToken();
 $.JSNull_methods = $.JSNull.prototype;
+$.C__Random = new $._Random();
 $.JSInt_methods = $.JSInt.prototype;
 $.Duration_0 = new $.Duration(0);
 $.JSArray_methods = $.JSArray.prototype;
@@ -5662,6 +5856,9 @@ $.$sub$n = function(receiver, a0) {
 $.add$1$ax = function(receiver, a0) {
   return $.getInterceptor$ax(receiver).add$1(receiver, a0);
 };
+$.arc$6$x = function(receiver, a0, a1, a2, a3, a4, a5) {
+  return $.getInterceptor$x(receiver).arc$6(receiver, a0, a1, a2, a3, a4, a5);
+};
 $.forEach$1$ax = function(receiver, a0) {
   return $.getInterceptor$ax(receiver).forEach$1(receiver, a0);
 };
@@ -5682,6 +5879,9 @@ $.get$isEmpty$asx = function(receiver) {
 };
 $.get$iterator$ax = function(receiver) {
   return $.getInterceptor$ax(receiver).get$iterator(receiver);
+};
+$.get$last$ax = function(receiver) {
+  return $.getInterceptor$ax(receiver).get$last(receiver);
 };
 $.get$length$asx = function(receiver) {
   return $.getInterceptor$asx(receiver).get$length(receiver);
@@ -5868,6 +6068,10 @@ $.defineNativeMethods("HTMLButtonElement", $.ButtonElement);
 $.defineNativeMethods("CDATASection", $.CDataSection);
 
 $.defineNativeMethods("HTMLCanvasElement", $.CanvasElement);
+
+$.defineNativeMethods("CanvasGradient", $.CanvasGradient);
+
+$.defineNativeMethods("CanvasPattern", $.CanvasPattern);
 
 $.defineNativeMethodsNonleaf("CanvasRenderingContext", $.CanvasRenderingContext);
 
