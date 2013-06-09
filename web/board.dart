@@ -9,21 +9,21 @@ class Board {
   Element container;
 
   Map<String, Element> layers = {};
-  int boardMargin;
   int size;
-  double lineGap;
-  double stoneRadius;
+  int paddingTop;
+  int lineGap;
+  int stoneRadius;
 
   Board(container) {
     this.container = query(container);
-    this.boardMargin = 70;
+    this.paddingTop = 120;
 
     createCanvasElements();
     calculateStoneSize();
   }
 
   void createCanvasElements() {
-    for (final layer in ["buffer", "goban", "stones", "markers", "hover"]) {
+    for (final layer in ["buffer", "board", "stones", "markers", "hover"]) {
       final canvasLayer = new CanvasElement();
 
       canvasLayer.id = layer;
@@ -34,18 +34,19 @@ class Board {
       container.children.add(canvasLayer);
     }
 
-    positionCanvasElements();
+    calculateBoardSize();
   }
 
-  void positionCanvasElements() {
-    var minWidth = px2Int(container.parent.getComputedStyle().minWidth);
-    var height = px2Int(container.parent.getComputedStyle().height);
+  void calculateBoardSize() {
+    var width  = px2Int(container.parent.getComputedStyle().width);
+    var height = px2Int(container.parent.getComputedStyle().height) - this.paddingTop;
 
-    this.size = (max(minWidth, height) - boardMargin);
+    this.size = min(width, height);
 
     var sizePx = size.toString() + "px";
 
-    container.style.width = sizePx;
+    container.style..height = sizePx
+                   ..width  = sizePx;
 
     for (final layer in layers.keys) {
       layers[layer].style..height = sizePx
@@ -54,9 +55,9 @@ class Board {
   }
 
   void calculateStoneSize() {
-    this.lineGap = this.size / 19;
-    this.stoneRadius = this.lineGap / 2;
+    this.lineGap = (this.size / 19).round();
+    this.stoneRadius = (this.lineGap / 2).round();
   }
 
-  int px2Int(String style) => int.parse(style.replaceAll("px", ""));
+  int px2Int(String style) => double.parse(style.replaceAll("px", "")).round();
 }

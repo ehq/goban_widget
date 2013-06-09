@@ -1,4 +1,4 @@
-.goban {
+.board {
   box-shadow: 1px 1px 2px #333;
   -webkit-box-shadow: 1px 1px 2px #333;
   -moz-box-shadow: 1px 1px 2px #333;
@@ -17,6 +17,11 @@
 
 #goban {
   position: relative;
+  width: 100%;
+}
+
+#goban canvas {
+  width: 100%;
 }
 
 .labels {

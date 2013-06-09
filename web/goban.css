@@ -79,7 +79,13 @@ footer h1 {
 }
 
 #content {
+  margin: 0 auto;
+  min-width: 450px;
+  width: 100%;
   height: 100%;
-  padding-left: 25px;
-  min-width: 420px;
+}
+
+#board {
+  height: 100%;
+  width: 100%;
 }
