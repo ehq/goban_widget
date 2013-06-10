@@ -1,8 +1,17 @@
+library board;
+
 import 'dart:html';
 import 'dart:math';
 
+part "position.dart";
+
+typedef void BoardCallback(Board b, int x, int y);
+
 void main() {
-  var board = new Board("#goban");
+  void onClick(Board b, int x, int y) => b.playAt(x, y);
+  void onHover(Board b, int x, int y) => b.hoverAt(x, y);
+
+  var board = new Board("#goban", onClick, onHover);
 }
 
 class Board {
@@ -15,15 +24,25 @@ class Board {
   List drawnStones;
   Point hoveredStone;
 
+  // Callbacks.
+  BoardCallback onClick;
+  BoardCallback onHover;
+
+  // Sprite.
   final stonesImage = new ImageElement(src: "../images/stones-sprite-smallest.png");
 
-  Board(container) {
+  Board(container, BoardCallback onClick, BoardCallback onHover) {
     this.container = query(container);
     this.paddingTop = 120;
     this.drawnStones = [];
 
+    this.onClick = onClick;
+    this.onHover = onHover;
+
     createCanvasElements();
     calculateStoneSize();
+
+    bindMouseEvents();
 
     stonesImage.onLoad.listen((evt) => render());
   }
@@ -191,6 +210,37 @@ class Board {
     }
   }
 
+  void refresh() {
+    calculateBoardSize();
+    calculateStoneSize();
+    render();
+  }
+
+  void bindResizeEvent() {
+    window.onResize.listen((evt) => refresh());
+  }
+
+  void mouseMove(evt) {
+    var coords = parseMouseCoords(evt);
+
+    onHover(this, coords.x,coords.y);
+  }
+
+  void mouseClick(evt) {
+    var coords = parseMouseCoords(evt);
+
+    // Make sure that there isn't a stone already at these coords.
+    if (stonePlayedAt(coords.x, coords.y)) return;
+
+    onClick(this, coords.x, coords.y);
+  }
+
+  void bindMouseEvents() {
+    this.layers['hover'].onMouseMove.listen((evt) => mouseMove(evt));
+    this.layers['hover'].onMouseOut.listen((evt) => clearLayer('hover'));
+    this.layers['hover'].onClick.listen((evt) => mouseClick(evt));
+  }
+
   bool stonePlayedAt(int x, int y) =>
       this.drawnStones.any((stone) => stone[0] == x && stone[1] == y);
 
@@ -199,6 +249,15 @@ class Board {
 
   void clearLayer(String layer) =>
       this.layers[layer].context2D.clearRect(0, 0, this.size, this.size);
+
+  Point parseMouseCoords(evt) {
+      var offset = new ElementOffset(this.layers['board']);
+
+      var x = (evt.pageX - offset.left - this.stoneRadius) / this.lineGap + 1;
+      var y = (evt.pageY - offset.top  - this.stoneRadius) / this.lineGap + 1;
+
+      return new Point(x.round(), y.round());
+  }
 
   // For a given pair of game coords, like 2,2,
   // return the actual canvas position coords like 53.5, 53.5.
