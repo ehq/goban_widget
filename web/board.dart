@@ -5,6 +5,7 @@ import 'dart:math';
 import 'dart:async';
 
 part "position.dart";
+part "time_limited_event_transformer.dart";
 
 void main() {
   var board = new Board("#goban");
@@ -40,7 +41,7 @@ class Board {
   int paddingTop;
   int lineGap;
   int stoneRadius;
-  List drawnStones;
+  List drawnStones = [];
   Point hoveredStone;
 
   Stream<MouseEvent> onClick;
@@ -51,10 +52,6 @@ class Board {
   Board(container) {
     this.container = query(container);
     this.paddingTop = 120;
-    this.drawnStones = [];
-
-    this.onClick = onClick;
-    this.onHover = onHover;
 
     createCanvasElements();
     calculateStoneSize();
@@ -65,6 +62,9 @@ class Board {
     stonesImage.onLoad.listen((evt) => render());
   }
 
+  // Add the canvas layers where the board and the stones will be drawn.
+  // A hidden buffer layer is used to draw first, for additional performance,
+  // and only then we copy it to the visible board canvas.
   void createCanvasElements() {
     for (final layer in ["buffer", "board", "stones", "markers", "hover"]) {
       final canvasLayer = new CanvasElement();
@@ -72,7 +72,7 @@ class Board {
       canvasLayer.id = layer;
       canvasLayer.classes.add(layer);
 
-      layers[layer] = canvasLayer;
+      this.layers[layer] = canvasLayer;
 
       container.children.add(canvasLayer);
     }
@@ -231,7 +231,9 @@ class Board {
   }
 
   void bindResizeEvent() {
-    window.onResize.listen((evt) => refresh());
+    window.onResize
+        .transform(new TimeLimitedEventTransformer(new Duration(milliseconds: 50)))
+        .listen((evt) => refresh());
   }
 
   void bindMouseEvents() {
