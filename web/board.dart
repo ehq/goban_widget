@@ -2,16 +2,15 @@ library board;
 
 import 'dart:html';
 import 'dart:math';
+import 'dart:async';
 
 part "position.dart";
 
-typedef void BoardCallback(Board b, int x, int y);
-
 void main() {
-  void onClick(Board b, int x, int y) => b.playAt(x, y);
-  void onHover(Board b, int x, int y) => b.hoverAt(x, y);
+  var board = new Board("#goban");
 
-  var board = new Board("#goban", onClick, onHover);
+  board.onClick.listen((coords) => board.playAt(coords.x, coords.y, 'black'));
+  board.onHover.listen((coords) => board.hoverAt(coords.x, coords.y, 'black'));
 }
 
 class Board {
@@ -24,14 +23,12 @@ class Board {
   List drawnStones;
   Point hoveredStone;
 
-  // Callbacks.
-  BoardCallback onClick;
-  BoardCallback onHover;
+  Stream<MouseEvent> onClick;
+  Stream<MouseEvent> onHover;
 
-  // Sprite.
   final stonesImage = new ImageElement(src: "../images/stones-sprite-smallest.png");
 
-  Board(container, BoardCallback onClick, BoardCallback onHover) {
+  Board(container) {
     this.container = query(container);
     this.paddingTop = 120;
     this.drawnStones = [];
@@ -43,6 +40,7 @@ class Board {
     calculateStoneSize();
 
     bindMouseEvents();
+    bindResizeEvent();
 
     stonesImage.onLoad.listen((evt) => render());
   }
@@ -190,8 +188,6 @@ class Board {
   }
 
   void playAt(int x,int y, [String color = "black"]) {
-    if (stonePlayedAt(x,y)) return;
-
     this.drawnStones.add([x, y, color]);
 
     drawStone(x,y,color);
@@ -199,8 +195,6 @@ class Board {
   }
 
   void hoverAt(int x, int y, [String color = 'black']) {
-    if (stoneHoveredAt(x,y)) return;
-
     clearLayer('hover');
     this.hoveredStone = null;
 
@@ -220,25 +214,16 @@ class Board {
     window.onResize.listen((evt) => refresh());
   }
 
-  void mouseMove(evt) {
-    var coords = parseMouseCoords(evt);
-
-    onHover(this, coords.x,coords.y);
-  }
-
-  void mouseClick(evt) {
-    var coords = parseMouseCoords(evt);
-
-    // Make sure that there isn't a stone already at these coords.
-    if (stonePlayedAt(coords.x, coords.y)) return;
-
-    onClick(this, coords.x, coords.y);
-  }
-
   void bindMouseEvents() {
-    this.layers['hover'].onMouseMove.listen((evt) => mouseMove(evt));
     this.layers['hover'].onMouseOut.listen((evt) => clearLayer('hover'));
-    this.layers['hover'].onClick.listen((evt) => mouseClick(evt));
+
+    this.onHover = this.layers['hover'].onMouseMove
+        .map((evt) => parseMouseCoords(evt))
+        .where((coords) => !stoneHoveredAt(coords.x, coords.y));
+
+    this.onClick = this.layers['hover'].onClick
+        .map((evt) => parseMouseCoords(evt))
+        .where((coords) => !stonePlayedAt(coords.x, coords.y));
   }
 
   bool stonePlayedAt(int x, int y) =>
