@@ -7,13 +7,6 @@ import 'dart:async';
 part "position.dart";
 part "time_limited_event_transformer.dart";
 
-void main() {
-  var board = new Board("#goban");
-
-  board.onClick.listen((coords) => board.playAt(coords.x, coords.y, 'black'));
-  board.onHover.listen((coords) => board.hoverAt(coords.x, coords.y, 'black'));
-}
-
 /// This library implements a go board, and has no game
 /// logic at all, it only serves as a visual representation of a board,
 /// and defines an API to use it.
@@ -30,7 +23,7 @@ void main() {
 ///
 /// ### Available methods:
 ///
-/// * `playAt(int x, int y, [String color = 'black'])` Draws the stone on the board at the given coords.
+/// * `playAt(int x, int y, [String color = 'black'])` // Draws the stone on the board at the given coords.
 /// * `hoverAt(int x, int y, [String color = 'black'])` // Adds a semi-transparent stone at the given coords.
 /// * `markAt(int x, int y,[String color = 'black'])` // Adds a circle marker at the given coords.
 /// * `killAt(int x, int y)` // Removes the stone from the board at the given coords.
@@ -142,6 +135,7 @@ class Board {
   void drawStars() {
     var context = this.layers["board"].context2D;
 
+    // FIXME: The star points coordinates should be stored as in a constant.
     for (var coord in [[4,4],[10,4],[16,4],[4,10],[10,10],[16,10],[4,16],[10,16],[16,16]]) {
       coord = getCoords(coord[0],coord[1]);
 
