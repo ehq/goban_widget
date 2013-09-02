@@ -81,8 +81,9 @@ class Board {
   }
 
   void calculateBoardSize() {
-    var width  = px2Int(container.parent.getComputedStyle().width);
-    var height = px2Int(container.parent.getComputedStyle().height) - this.paddingTop;
+    var style = container.parent.getComputedStyle();
+    var width  = px2Int(style.width);
+    var height = px2Int(style.height) - this.paddingTop;
 
     this.size = min(width, height);
 
