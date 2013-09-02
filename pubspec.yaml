@@ -1,4 +1,6 @@
 name: goban
-description: A sample web application
+version: 0.0.1
+author: Lucas Nasif
+description: Go board widget
 dependencies:
   browser: any
